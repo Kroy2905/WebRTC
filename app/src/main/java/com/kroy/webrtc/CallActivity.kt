@@ -11,11 +11,14 @@ import com.kroy.webrtc.models.IceCandidateModel
 import com.kroy.webrtc.models.MessageModel
 import com.kroy.webrtc.socket.RTCClient
 import com.kroy.webrtc.socket.SocketRepository
+import com.kroy.webrtc.utils.ImageConverter
 import com.kroy.webrtc.utils.NewMessageInterface
 import com.kroy.webrtc.utils.PeerConnectionObserver
 import org.webrtc.IceCandidate
 import org.webrtc.MediaStream
 import org.webrtc.SessionDescription
+import org.webrtc.VideoFrame
+import org.webrtc.VideoSink
 
 class CallActivity : AppCompatActivity(),NewMessageInterface{
     lateinit var  binding : ActivityCallBinding
@@ -56,9 +59,34 @@ class CallActivity : AppCompatActivity(),NewMessageInterface{
 
             override fun onAddStream(p0: MediaStream?) {
                 super.onAddStream(p0)
-                Log.d(TAG,"video tracks-> ${p0!!.videoTracks}")
-                p0.videoTracks?.get(0)?.addSink(binding.remoteView)
+                Log.d(TAG, "video tracks -> ${p0!!.videoTracks}")
+
+                // Attach the custom video sink directly in this class
+                val videoTrack = p0.videoTracks?.get(0)
+                videoTrack?.addSink(object : VideoSink {
+                    override fun onFrame(frame: VideoFrame?) {
+                        frame?.let {
+                            // Process the frame here
+                            Log.d(TAG, "Frame received: ${frame}")
+
+                            // Convert the frame to a Bitmap
+                            val bitmap = ImageConverter.convertFrameToBitmap(frame)
+                            runOnUiThread {
+                                binding.imagerender.setImageBitmap(bitmap)
+                            }
+
+
+                            // Now you can use the bitmap in this class
+                            Log.d(TAG, "Bitmap size: ${bitmap.width}x${bitmap.height}")
+                            // For example, display the bitmap or pass it to another method for further processing
+                        }
+                    }
+                })
+
+                // Optionally, you can still show the stream on a SurfaceView (remoteView in your case)
+                videoTrack?.addSink(binding.remoteView)
             }
+
 
         })
 
