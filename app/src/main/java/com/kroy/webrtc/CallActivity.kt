@@ -84,7 +84,7 @@ class CallActivity : AppCompatActivity(),NewMessageInterface{
                 })
 
                 // Optionally, you can still show the stream on a SurfaceView (remoteView in your case)
-                videoTrack?.addSink(binding.remoteView)
+                //videoTrack?.addSink(binding.remoteView)
             }
 
 
